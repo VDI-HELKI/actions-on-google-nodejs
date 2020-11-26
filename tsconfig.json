@@ -13,7 +13,7 @@
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": true,
     "noImplicitReturns": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "strictNullChecks": true,
     "alwaysStrict": true,
     "noUnusedLocals": true
