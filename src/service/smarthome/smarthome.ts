@@ -298,14 +298,27 @@ const makeApiCall = (url: string, data: JsonObject, jwt?: SmartHomeJwt): Promise
 
         res.on('end', () => {
           const apiResponse: string = Buffer.concat(buffers).toString(encoding)
-          const apiResponseJson = JSON.parse(apiResponse)
-          if (apiResponseJson.error && apiResponseJson.error.code >= 400) {
-            // While the response ended, it contains an error.
-            // In this case, this should reject the Promise.
-            reject(apiResponse)
+
+          const isJSON = (str) => {
+            if ( /^\s*$/.test(str) ) return false
+            str = str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+            str = str.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
+            str = str.replace(/(?:^|:|,)(?:\s*\[)+/g, '')
+            return (/^[\],:{}\s]*$/).test(str)
+          }
+          if (isJSON(apiResponse)) {
+            const apiResponseJson = JSON.parse(apiResponse)
+            if (apiResponseJson.error && apiResponseJson.error.code >= 400) {
+              // While the response ended, it contains an error.
+              // In this case, this should reject the Promise.
+              reject(apiResponse)
+              return
+            }
+            resolve(apiResponse)
             return
           }
-          resolve(apiResponse)
+          reject(apiResponse)
+          return
         })
       })
 
